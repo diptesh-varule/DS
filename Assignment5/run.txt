@@ -1,0 +1,3 @@
+javac Assign5.java
+java Tring
+
