@@ -1,7 +1,5 @@
 import mpi.MPI;
-
 import java.util.Scanner;
-
 import mpi.*;
 
 public class ScatterGather {
@@ -10,7 +8,7 @@ public class ScatterGather {
         //  Get rank of each process and size of communicator
         int rank = MPI.COMM_WORLD.Rank();
         int size = MPI.COMM_WORLD.Size();
-        
+
         int unitsize = 5;
         int root = 0;
         int send_buffer[] = null;
