@@ -4,62 +4,45 @@ public class Ring {
 
 	int n, inactive_count;
 	int coordinator;
-	boolean[] process_state;
+	boolean[] state;
 	
 	public Ring(int n) {
 		this.n = n;
 		this.inactive_count = 0;
-		this.process_state = new boolean[n];
+		this.state = new boolean[n];
 		//	State all processes as active		
 		for(int i = 0; i < n; i++) {
-			this.process_state[i] = true;
+			this.state[i] = true;
 		}
 		this.coordinator = n - 1;
 		System.out.println("Process " + n + " is set as initial coordinator");
 	}
 	
 	public void deactivate_process(int id) {
-		/*
-		 *	Input	:	Process ID
-		 *	Utility :	Deactivate process
-		 *	Output	:	None	
-		 */
-		 if(id > n || id < 0) {
-		 	System.out.println("Invalid ID");
-		 	return;
-		 }
-		 if(!process_state[id - 1]) {
+
+		 if(!state[id - 1]) {
 		 	System.out.println("Process already inactive");
 		 } else {
-		 	process_state[id - 1] = false;
+		 	state[id - 1] = false;
 		 	System.out.println("Process " + id + " deactivated");
 		 	inactive_count += 1;
 		 }
 	}
 	
 	public void view_ring() {
-		/*
-		 *	Input	:	None
-		 *	Utility :	Display ring 
-		 *	Output	:	Console output
-		 */
-		 
+	
 		 if(this.inactive_count == n) {
 		 	System.out.println("All members inactive...");
 		 	return;
 		 }
 		 System.out.println("Active Ring members");
 		 for(int i = 0; i < n; i++) {
-		 	if(process_state[i]) System.out.println((i + 1) + " ");
+		 	if(state[i]) System.out.println((i + 1) + " ");
 		 }
 	}
 	
 	public void election(int id) {
-		/*
-		 *	Input	:	Initiator
-		 *	Utility :	Hold election process to select coordinator
-		 *	Output	:	Coordinator id
-		 */
+		
 		 if(this.inactive_count == this.n) {
 		 	System.out.println("All members inactive...");
 		 	System.out.println("Aborting election process...");
@@ -74,7 +57,7 @@ public class Ring {
 		 //	Election algorithm
 		 while(token != id) {
 			System.out.println("Token at process " + (token + 1));
-			if(this.process_state[token]) {
+			if(this.state[token]) {
 				if(token > current_coordinator) {
 					current_coordinator = token;
 				}
@@ -86,20 +69,20 @@ public class Ring {
 	}
 
 	public void ping_coordinator(int id) {
-		if(!this.process_state[id - 1]) {
+		if(!this.state[id - 1]) {
 			System.out.println("Process inactive...");
 			System.out.println("Aborting...");
 			return;
 		}
 		if(id == coordinator) {
-			if(this.process_state[id - 1]) {
+			if(this.state[id - 1]) {
 				System.out.println("Coordinator active");
 			} else {
 				System.out.println("Coordinator inactive!\nInitiate election from other process");
 			}
 		}
 		System.out.println("Sending message from process " + id + " to " + (this.coordinator + 1));
-		if(!this.process_state[this.coordinator]) {
+		if(!this.state[this.coordinator]) {
 			System.out.println("Coordinator process not responding");
 			System.out.println("Conducting election...");
 			this.election(id);
