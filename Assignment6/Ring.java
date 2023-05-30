@@ -2,135 +2,172 @@ import java.util.Scanner;
 
 public class Ring {
 
-  public static void main(String[] args) {
-    // TODO Auto-generated method stub
+	int n, inactive_count;
+	int coordinator;
+	boolean[] process_state;
+	
+	public Ring(int n) {
+		this.n = n;
+		this.inactive_count = 0;
+		this.process_state = new boolean[n];
+		//	State all processes as active		
+		for(int i = 0; i < n; i++) {
+			this.process_state[i] = true;
+		}
+		this.coordinator = n - 1;
+		System.out.println("Process " + n + " is set as initial coordinator");
+	}
+	
+	public void deactivate_process(int id) {
+		/*
+		 *	Input	:	Process ID
+		 *	Utility :	Deactivate process
+		 *	Output	:	None	
+		 */
+		 if(id > n || id < 0) {
+		 	System.out.println("Invalid ID");
+		 	return;
+		 }
+		 if(!process_state[id - 1]) {
+		 	System.out.println("Process already inactive");
+		 } else {
+		 	process_state[id - 1] = false;
+		 	System.out.println("Process " + id + " deactivated");
+		 	inactive_count += 1;
+		 }
+	}
+	
+	public void view_ring() {
+		/*
+		 *	Input	:	None
+		 *	Utility :	Display ring 
+		 *	Output	:	Console output
+		 */
+		 
+		 if(this.inactive_count == n) {
+		 	System.out.println("All members inactive...");
+		 	return;
+		 }
+		 System.out.println("Active Ring members");
+		 for(int i = 0; i < n; i++) {
+		 	if(process_state[i]) System.out.println((i + 1) + " ");
+		 }
+	}
+	
+	public void election(int id) {
+		/*
+		 *	Input	:	Initiator
+		 *	Utility :	Hold election process to select coordinator
+		 *	Output	:	Coordinator id
+		 */
+		 if(this.inactive_count == this.n) {
+		 	System.out.println("All members inactive...");
+		 	System.out.println("Aborting election process...");
+			this.coordinator = -1;
+		 	return;
+		 }
+		 id = id - 1;		 
+		 int current_coordinator = id;	 
+		 int token = (id + 1) % n;
+		 System.out.println("\nElection initiator : " + (id + 1));
+		 
+		 //	Election algorithm
+		 while(token != id) {
+			System.out.println("Token at process " + (token + 1));
+			if(this.process_state[token]) {
+				if(token > current_coordinator) {
+					current_coordinator = token;
+				}
+			}
+			token = (token + 1) % this.n;
+		 }
+		 System.out.println("Elected coordinator : " + (current_coordinator + 1));
+		 this.coordinator = current_coordinator;
+	}
 
-    int temp, i, j;
-    char str[] = new char[10];
-    Rr proc[] = new Rr[10];
+	public void ping_coordinator(int id) {
+		if(!this.process_state[id - 1]) {
+			System.out.println("Process inactive...");
+			System.out.println("Aborting...");
+			return;
+		}
+		if(id == coordinator) {
+			if(this.process_state[id - 1]) {
+				System.out.println("Coordinator active");
+			} else {
+				System.out.println("Coordinator inactive!\nInitiate election from other process");
+			}
+		}
+		System.out.println("Sending message from process " + id + " to " + (this.coordinator + 1));
+		if(!this.process_state[this.coordinator]) {
+			System.out.println("Coordinator process not responding");
+			System.out.println("Conducting election...");
+			this.election(id);
+		} else {
+			System.out.println("Coordinator alive");
+		}
+	}
 
-    // object initialisation
-    for (i = 0; i < proc.length; i++) proc[i] = new Rr();
+	public void setCoordinator(int c) {
+		this.coordinator = c;
+	}
 
-    // scanner used for getting input from console
-    Scanner in = new Scanner(System.in);
-    System.out.println("Enter the number of process : ");
-    int num = in.nextInt();
-
-    // getting input from users
-    for (i = 0; i < num; i++) {
-      proc[i].index = i;
-      System.out.println("Enter the id of process : ");
-      proc[i].id = in.nextInt();
-      proc[i].state = "active";
-      proc[i].f = 0;
-    }
-
-    // sorting the processes from on the basis of id
-    for (i = 0; i < num - 1; i++) {
-      for (j = 0; j < num - 1; j++) {
-        if (proc[j].id > proc[j + 1].id) {
-          temp = proc[j].id;
-          proc[j].id = proc[j + 1].id;
-          proc[j + 1].id = temp;
-        }
-      }
-    }
-
-    for (i = 0; i < num; i++) {
-      System.out.print("  [" + i + "]" + " " + proc[i].id);
-    }
-
-    int init;
-    int ch;
-    int temp1;
-    int temp2;
-    int ch1;
-    int arr[] = new int[10];
-
-    proc[num - 1].state = "inactive";
-
-    System.out.println(
-      "\n process " + proc[num - 1].id + "select as co-ordinator"
-    );
-
-    while (true) {
-      System.out.println("\n 1.election 2.quit ");
-      ch = in.nextInt();
-
-      for (i = 0; i < num; i++) {
-        proc[i].f = 0;
-      }
-
-      switch (ch) {
-        case 1:
-          System.out.println(
-            "\n Enter the Process number who initialsied election : "
-          );
-          init = in.nextInt();
-          temp2 = init;
-          temp1 = init + 1;
-
-          i = 0;
-
-          while (temp2 != temp1) {
-            if ("active".equals(proc[temp1].state) && proc[temp1].f == 0) {
-              System.out.println(
-                "\nProcess " +
-                proc[init].id +
-                " send message to " +
-                proc[temp1].id
-              );
-              proc[temp1].f = 1;
-              init = temp1;
-              arr[i] = proc[temp1].id;
-              i++;
-            }
-            if (temp1 == num) {
-              temp1 = 0;
-            } else {
-              temp1++;
-            }
-          }
-
-          System.out.println(
-            "\nProcess " + proc[init].id + " send message to " + proc[temp1].id
-          );
-          arr[i] = proc[temp1].id;
-          i++;
-          int max = -1;
-
-          // finding maximum for co-ordinator selection
-          for (j = 0; j < i; j++) {
-            if (max < arr[j]) {
-              max = arr[j];
-            }
-          }
-
-          // co-ordinator is found then printing on console
-          System.out.println("\n process " + max + "select as co-ordinator");
-
-          for (i = 0; i < num; i++) {
-            if (proc[i].id == max) {
-              proc[i].state = "inactive";
-            }
-          }
-          break;
-        case 2:
-          System.out.println("Program terminated ...");
-          return;
-        default:
-          System.out.println("\n invalid response \n");
-          break;
-      }
-    }
-  }
-}
-
-class Rr {
-
-  public int index; // to store the index of process
-  public int id; // to store id/name of process
-  public int f;
-  String state; // indiactes whether active or inactive state of node
+	public static void main(String[] args) {
+		int choice = 0;
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Enter number of processes: ");
+		int n = sc.nextInt();
+		Ring ring = new Ring(n);
+		
+		while(choice < 5) {
+			System.out.println("***********Menu***********");
+			System.out.println("1. Deactivate a process");
+			System.out.println("2. Ping coordinator");
+			System.out.println("3. View Ring");
+			System.out.println("4. Election");
+			System.out.println("5. Exit");
+			System.out.println("**************************");
+			System.out.println("Enter Choice : ");
+			choice = sc.nextInt();
+			switch(choice) {
+				case 1 : {
+					int id;
+					System.out.println("Enter process ID : ");
+					id = sc.nextInt();
+					ring.deactivate_process(id);
+					System.out.println("");
+					break;
+				}
+				case 2 : {
+					int id;
+					System.out.println("Enter process ID for sender");
+					id = sc.nextInt();
+					ring.ping_coordinator(id);
+					System.out.println("");
+					break;
+				}
+				case 3 : {
+					ring.view_ring();
+					System.out.println("");
+					break;
+				}
+				case 4 : {
+					int id;
+					System.out.println("Enter process ID for election initiator");
+					id = sc.nextInt();
+					ring.election(id);
+					System.out.println("");
+					break;
+				}
+				case 5 :
+				default : {
+					System.out.println("");
+					break;
+				}
+			}
+		
+		}			
+		System.out.println("Program terminated..");	
+		sc.close();
+	}
 }
