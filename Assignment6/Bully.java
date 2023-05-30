@@ -3,7 +3,7 @@ import java.util.Scanner;
     public class Bully{
 
         static boolean state[]=new boolean[5];
-        int coordinator;
+     
 
         public static void down(int down){
             if(state[down-1]==false){
